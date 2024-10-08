@@ -4,7 +4,7 @@ class Validator:
 
   @staticmethod
   def validatePhoneNumber(phone_number: str) -> bool:
-        pattern = r'^\+?\d{10,15}$'  # Example: +66835454248 or 0835454248
+        pattern = r'^\+?\d{10,15}$'
         return re.match(pattern, phone_number) is not None
     
   @staticmethod  

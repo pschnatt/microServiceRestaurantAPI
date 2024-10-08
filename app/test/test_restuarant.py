@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from app.helpers.exception import RestaurantException
 from app.main import app 
