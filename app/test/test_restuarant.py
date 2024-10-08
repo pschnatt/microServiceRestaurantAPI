@@ -1,13 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app 
-from app.models.restaurauntBaseModel import RestaurantMutation
 
 client = TestClient(app)
 
 def test_addRestaurant_ReturnSuccess():
     userId = 1
-    restaurant_data = {
+    restaurantData = {
         "restaurantName": "Good Eats",
         "location": "123 Food Street",
         "type": "American",
@@ -22,14 +21,14 @@ def test_addRestaurant_ReturnSuccess():
         "capacity": 50,
         "description": "A cozy place for delicious food."
     }
-    response = client.post(f"/api/restaurant/{userId}/create", json=restaurant_data)
+    response = client.post(f"/api/restaurant/{userId}/create", json=restaurantData)
 
     assert response.status_code == 201
     assert "restaurantId" in response.json()
 
 def test_addRestaurantInvalidName_ReturnError():
     userId = 1
-    restaurant_data = {
+    restaurantData = {
         "restaurantName": "Eats",
         "location": "123 Food Street",
         "type": "American",
@@ -44,7 +43,7 @@ def test_addRestaurantInvalidName_ReturnError():
         "capacity": 50,
         "description": "A cozy place for delicious food."
     }
-    response = client.post(f"/api/restaurant/{userId}/create", json=restaurant_data)
+    response = client.post(f"/api/restaurant/{userId}/create", json=restaurantData)
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Restaurant name must be at least 6 characters long."
