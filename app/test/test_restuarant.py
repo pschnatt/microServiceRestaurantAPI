@@ -145,3 +145,81 @@ def test_retrieveRestaurantById_ReturnServerError():
         response = client.get(f"/api/restaurant/get/{restaurantId}")
     assert response.status_code == 500
     assert response.json() == {"detail": "Internal server error."}
+
+def test_updateRestaurant_ReturnSuccess():
+    mock_response = {
+        "statusCode": 200,
+        "restaurantId": "1234567890abcdef"
+    }
+
+    with patch('app.services.restaurantService.RestaurantService.updateRestaurant', return_value=mock_response):
+        restaurant_data = {
+            "restaurantName": "Updated Restaurant",
+            "location": "123 Updated Food Street",
+            "type": "Italian",
+            "contactInfo": {
+                "phoneNumber": "+12345678901",
+                "email": "info@updatedrestaurant.com"
+            },
+            "operatingHour": {
+                "openTime": "2024-10-08T09:00:00",
+                "closeTime": "2024-10-08T22:00:00"
+            },
+            "capacity": 50,
+            "description": "An updated description."
+        }
+
+        response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
+
+    assert response.status_code == 200
+    assert response.json() == {"restaurantId": "1234567890abcdef"}
+
+def test_updateRestaurant_ReturnFailure_RestaurantInactive():
+    mock_exception = RestaurantException(400, "Cannot update restaurant because it is inactive.")
+
+    with patch('app.services.restaurantService.RestaurantService.updateRestaurant', side_effect=mock_exception):
+        restaurant_data = {
+            "restaurantName": "Inactive Restaurant",
+            "location": "123 Inactive Food Street",
+            "type": "Italian",
+            "contactInfo": {
+                "phoneNumber": "+12345678901",
+                "email": "info@inactiverestaurant.com"
+            },
+            "operatingHour": {
+                "openTime": "2024-10-08T09:00:00",
+                "closeTime": "2024-10-08T22:00:00"
+            },
+            "capacity": 50,
+            "description": "An inactive restaurant."
+        }
+
+        response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Cannot update restaurant because it is inactive."}
+
+def test_updateRestaurant_ReturnFailure_InvalidData():
+    mock_exception = RestaurantException(400, "Restaurant name must be at least 6 characters long.")
+
+    with patch('app.services.restaurantService.RestaurantService.updateRestaurant', side_effect=mock_exception):
+        restaurant_data = {
+            "restaurantName": "Bad",
+            "location": "123 Bad Food Street",
+            "type": "Italian",
+            "contactInfo": {
+                "phoneNumber": "+12345678901",
+                "email": "info@badrestaurant.com"
+            },
+            "operatingHour": {
+                "openTime": "2024-10-08T09:00:00",
+                "closeTime": "2024-10-08T22:00:00"
+            },
+            "capacity": 50,
+            "description": "A bad restaurant."
+        }
+
+        response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Restaurant name must be at least 6 characters long."}

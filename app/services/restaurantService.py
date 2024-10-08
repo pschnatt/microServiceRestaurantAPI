@@ -17,20 +17,21 @@ class RestaurantService:
       try:
         restaurantData = restaurantMutation.model_dump()
 
-        if not (Validator.validate_capacity(len(restaurantData["restaurantName"]), 6)):
+        if not (Validator.validateCapacity(len(restaurantData["restaurantName"]), 6)):
           raise RestaurantException(400, "Restaurant name must be at least 6 characters long.")
         
-        if not Validator.validate_phone_number(restaurantData["contactInfo"]["phoneNumber"]):
+        if not Validator.validatePhoneNumber(restaurantData["contactInfo"]["phoneNumber"]):
           raise RestaurantException(400, "Invalid phone number format.")
                     
-        if restaurantData["contactInfo"]["email"] and not Validator.validate_email(restaurantData["contactInfo"]["email"]):
+        if restaurantData["contactInfo"]["email"] and not Validator.validateEmail(restaurantData["contactInfo"]["email"]):
           raise RestaurantException(400, "Invalid email format.")
 
         if restaurantData["operatingHour"]["openTime"] >= restaurantData["operatingHour"]["closeTime"]:
           raise RestaurantException(400, "Open time must be earlier than close time.")
         
         restaurantData["created_by"] = userId
-        restaurantData["created_when"] = datetime.now().strftime("%d%m%Y")  
+        restaurantData["created_when"] = datetime.now().strftime("%d%m%Y") 
+        restaurantData["updated_by"] = userId 
         restaurantData["updated_when"] = datetime.now().strftime("%d%m%Y")
         restaurantData["status"] = 1
         result = self.collection.insert_one(restaurantData)
@@ -56,6 +57,7 @@ class RestaurantService:
             "description": restaurant["description"],
             "createdBy": restaurant["createdBy"],
             "createdWhen": restaurant["createdWhen"],
+            "updatedBy": restaurant["updatedBy"],
             "updatedWhen": restaurant["updatedWhen"]
         } for restaurant in restaurants]
 
@@ -82,6 +84,7 @@ class RestaurantService:
                 "description": restaurant["description"],
                 "createdBy": restaurant["createdBy"],
                 "createdWhen": restaurant["createdWhen"],
+                "updatedBy": restaurant["updatedBy"],
                 "updatedWhen": restaurant["updatedWhen"]
             }
             return {"statusCode": 200, "restaurant": restaurantData}
@@ -91,8 +94,50 @@ class RestaurantService:
         except Exception as e:
             raise RestaurantException(500, f"Error fetching restaurant by ID: {str(e)}")
     
-    def updateRestaurant(self, restaurantMutation : RestaurantMutation, restaurantId : str):
-        pass
+    def updateRestaurant(self, restaurantMutation: RestaurantMutation, restaurantId: str, userId: str):
+        try:
+            restaurantData = restaurantMutation.model_dump()
+
+            if not (Validator.validateCapacity(len(restaurantData["restaurantName"]), 6)):
+                raise RestaurantException(400, "Restaurant name must be at least 6 characters long.")
+            
+            if not Validator.validatePhoneNumber(restaurantData["contactInfo"]["phoneNumber"]):
+                raise RestaurantException(400, "Invalid phone number format.")
+            
+            if restaurantData["contactInfo"]["email"] and not Validator.validate_email(restaurantData["contactInfo"]["email"]):
+                raise RestaurantException(400, "Invalid email format.")
+
+            if restaurantData["operatingHour"]["openTime"] >= restaurantData["operatingHour"]["closeTime"]:
+                raise RestaurantException(400, "Open time must be earlier than close time.")
+            
+            existing_restaurant = self.collection.find_one({"_id": ObjectId(restaurantId)})
+            if not existing_restaurant:
+                raise RestaurantException(404, "Restaurant not found.")
+            if existing_restaurant["status"] == 0:
+                raise RestaurantException(400, "Cannot update restaurant because it is inactive.")
+
+            updateData = {
+                "$set": {
+                    "restaurantName": restaurantData["restaurantName"],
+                    "location": restaurantData["location"],
+                    "type": restaurantData["type"],
+                    "contactInfo": restaurantData["contactInfo"],
+                    "operatingHour": restaurantData["operatingHour"],
+                    "capacity": restaurantData["capacity"],
+                    "description": restaurantData["description"],
+                    "updated_by" : userId,
+                    "updated_When": datetime.now().strftime("%d%m%Y") 
+                }
+            }
+
+            result = self.collection.update_one({"_id": ObjectId(restaurantId)}, updateData)
+
+            return {"statusCode": 200, "restaurantId": restaurantId}
+
+        except RestaurantException as e:
+            raise e
+        except Exception as e:
+            raise RestaurantException(500, f"Error updating restaurant: {str(e)}")
     
     def deleteRestaurant(self, restaurantId : str):
         pass
