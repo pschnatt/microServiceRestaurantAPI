@@ -1,4 +1,5 @@
 from datetime import datetime
+from bson import ObjectId
 import certifi
 from pymongo import MongoClient
 from app.helpers.exception import RestaurantException
@@ -34,7 +35,7 @@ class RestaurantService:
         restaurantData["status"] = 1
         result = self.collection.insert_one(restaurantData)
 
-        return {"status_code": 201, "restaurant_id": str(result.inserted_id)}
+        return {"statusCode": 201, "restaurantId": str(result.inserted_id)}
       
       except RestaurantException as e:
             raise e 
@@ -42,10 +43,53 @@ class RestaurantService:
           raise RestaurantException(500, f"Error creating restaurant: {str(e)}")
       
     def getRestaurantList(self):
-        pass
+      try:
+        restaurants = list(self.collection.find({"status": 1}))
+        restaurantList = [{
+            "restaurantId": str(restaurant["_id"]),
+            "restaurantName": restaurant["restaurantName"],
+            "location": restaurant["location"],
+            "type": restaurant["type"],
+            "contactInfo": restaurant["contactInfo"],
+            "operatingHour": restaurant["operatingHour"],
+            "capacity": restaurant["capacity"],
+            "description": restaurant["description"],
+            "createdBy": restaurant["createdBy"],
+            "createdWhen": restaurant["createdWhen"],
+            "updatedWhen": restaurant["updatedWhen"]
+        } for restaurant in restaurants]
+
+        return {"statusCode": 200, "restaurants": restaurantList}  
     
-    def getRestaurantById(self, restaurantId : str):
-        pass
+      except Exception as e:
+        raise RestaurantException(500, f"Error fetching restaurant list: {str(e)}")
+    
+    def getRestaurantById(self, restaurantId: str):
+        try:
+            restaurant = self.collection.find_one({"_id": ObjectId(restaurantId), "status": 1})
+            
+            if restaurant is None:
+                raise RestaurantException(404, "Restaurant not found.")
+            
+            restaurantData = {
+                "restaurantId": str(restaurant["_id"]),
+                "restaurantName": restaurant["restaurantName"],
+                "location": restaurant["location"],
+                "type": restaurant["type"],
+                "contactInfo": restaurant["contactInfo"],
+                "operatingHour": restaurant["operatingHour"],
+                "capacity": restaurant["capacity"],
+                "description": restaurant["description"],
+                "createdBy": restaurant["createdBy"],
+                "createdWhen": restaurant["createdWhen"],
+                "updatedWhen": restaurant["updatedWhen"]
+            }
+            return {"statusCode": 200, "restaurant": restaurantData}
+        
+        except RestaurantException as e:
+            raise e
+        except Exception as e:
+            raise RestaurantException(500, f"Error fetching restaurant by ID: {str(e)}")
     
     def updateRestaurant(self, restaurantMutation : RestaurantMutation, restaurantId : str):
         pass

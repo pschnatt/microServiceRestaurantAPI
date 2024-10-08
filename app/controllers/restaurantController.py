@@ -13,18 +13,25 @@ restaurantService = RestaurantService()
 async def addRestaurant(restaurantMutation : RestaurantMutation, userId: str):
     try:
       response = restaurantService.createRestaurant(restaurantMutation, userId)
-      return JSONResponse(status_code=response["status_code"], content={"message": "Restaurant created successfully", "restaurantId": response["restaurant_id"]})
-    
+      return JSONResponse(status_code=response["statusCode"], content={"message": "Restaurant created successfully", "restaurantId": response["restaurantId"]})
     except RestaurantException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.get("/get")
 async def retrieveRestaurant():
-    pass
+    try:
+        response = restaurantService.getRestaurantList()
+        return JSONResponse(status_code=response["statusCode"], content={"message": "Restaurants fetched successfully", "restaurants": response["restaurants"]})
+    except RestaurantException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.get("/get/{restaurantId}")
 async def retrieveRestaurantById(restaurantId: str):
-    pass
+    try:
+        response = restaurantService.getRestaurantById(restaurantId)
+        return JSONResponse(status_code=response["statusCode"], content={"message": "Restaurant fetched successfully", "restaurant": response["restaurant"]})
+    except RestaurantException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.patch("/{userId}/update/{restaurantId}")
 async def updateRestaurant(restaurantMutation : RestaurantMutation, restaurantId: str, userId : str):
