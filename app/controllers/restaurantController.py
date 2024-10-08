@@ -1,15 +1,22 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 
+from app.helpers.exception import RestaurantException
 from app.models.restaurauntBaseModel import RestaurantMutation
 from app.services.restaurantService import RestaurantService
 
 router = APIRouter()
 
-payment_service = RestaurantService()
+restaurantService = RestaurantService()
 
-@router.post("/create")
-async def addRestaurant(restaurantMutation : RestaurantMutation):
-    pass
+@router.post("/{userId}/create")
+async def addRestaurant(restaurantMutation : RestaurantMutation, userId: str):
+    try:
+      response = restaurantService.createRestaurant(restaurantMutation, userId)
+      return JSONResponse(status_code=response["status_code"], content={"message": "Restaurant created successfully", "restaurantId": response["restaurant_id"]})
+    
+    except RestaurantException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.get("/get")
 async def retrieveRestaurant():
@@ -19,10 +26,10 @@ async def retrieveRestaurant():
 async def retrieveRestaurantById(restaurantId: str):
     pass
 
-@router.patch("/update/{restaurantId}")
-async def updateRestaurant(restaurantMutation : RestaurantMutation, restaurantId: str):
+@router.patch("/{userId}/update/{restaurantId}")
+async def updateRestaurant(restaurantMutation : RestaurantMutation, restaurantId: str, userId : str):
     pass
 
-@router.delete("/delete/{restaurantId}")
-async def deleteRestaurant(restaurantId: str):
+@router.delete("/{userId}/delete/{restaurantId}")
+async def deleteRestaurant(restaurantId: str, userId : str):
     pass
