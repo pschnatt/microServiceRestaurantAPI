@@ -37,10 +37,14 @@ async def retrieveRestaurantById(restaurantId: str):
 async def updateRestaurant(restaurantMutation : RestaurantMutation, restaurantId: str, userId : str):
     try:
         response = restaurantService.updateRestaurant(restaurantMutation, restaurantId, userId)
-        return JSONResponse(status_code=response["statusCode"], content={"restaurantId": response["restaurantId"]})
+        return JSONResponse(status_code=response["statusCode"], content={"message": "Restaurant updated successfully", "restaurantId": response["restaurantId"]})
     except RestaurantException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 @router.delete("/{userId}/delete/{restaurantId}")
-async def deleteRestaurant(restaurantId: str, userId : str):
-    pass
+async def deleteRestaurant(restaurantId: str, userId: str):
+    try:
+        response = restaurantService.deleteRestaurant(restaurantId, userId)
+        return JSONResponse(status_code=response["statusCode"], content={"message": "Restaurant deleted successfully", "restaurantId": response["restaurantId"]})
+    except RestaurantException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)

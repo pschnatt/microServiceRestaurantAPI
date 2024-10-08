@@ -172,7 +172,7 @@ def test_updateRestaurant_ReturnSuccess():
         response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
 
     assert response.status_code == 200
-    assert response.json() == {"restaurantId": "1234567890abcdef"}
+    assert response.json() == {"message" : "Restaurant updated successfully","restaurantId": "1234567890abcdef"}
 
 def test_updateRestaurant_ReturnFailure_RestaurantInactive():
     mock_exception = RestaurantException(400, "Cannot update restaurant because it is inactive.")
@@ -223,3 +223,27 @@ def test_updateRestaurant_ReturnFailure_InvalidData():
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Restaurant name must be at least 6 characters long."}
+
+def test_deleteRestaurant_ReturnSuccess():
+    mockResponse = {
+        "statusCode": 200,
+        "restaurantId": "1234567890abcdef"
+    }
+
+    with patch('app.services.restaurantService.RestaurantService.deleteRestaurant', return_value=mockResponse):
+        response = client.delete("/api/restaurant/userId123/delete/1234567890abcdef")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "Restaurant deleted successfully",
+        "restaurantId": mockResponse["restaurantId"]
+    }
+
+def test_deleteRestaurant_ReturnFailure():
+    mockException = RestaurantException(404, "Restaurant not found.")
+
+    with patch('app.services.restaurantService.RestaurantService.deleteRestaurant', side_effect=mockException):
+        response = client.delete("/api/restaurant/userId123/delete/1234567890abcdef")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Restaurant not found."}
