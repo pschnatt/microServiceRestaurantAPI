@@ -55,6 +55,7 @@ class RestaurantService:
             "operatingHour": restaurant["operatingHour"],
             "capacity": restaurant["capacity"],
             "description": restaurant["description"],
+            "cost" : restaurant["cost"],
             "createdBy": restaurant["createdBy"],
             "createdWhen": restaurant["createdWhen"],
             "updatedBy": restaurant["updatedBy"],
@@ -82,6 +83,7 @@ class RestaurantService:
                 "operatingHour": restaurant["operatingHour"],
                 "capacity": restaurant["capacity"],
                 "description": restaurant["description"],
+                "cost" : restaurant["cost"],
                 "createdBy": restaurant["createdBy"],
                 "createdWhen": restaurant["createdWhen"],
                 "updatedBy": restaurant["updatedBy"],
@@ -125,6 +127,7 @@ class RestaurantService:
                     "operatingHour": restaurantData["operatingHour"],
                     "capacity": restaurantData["capacity"],
                     "description": restaurantData["description"],
+                    "cost" : restaurantData["cost"],
                     "updated_by" : userId,
                     "updated_When": datetime.now().strftime("%d%m%Y") 
                 }
