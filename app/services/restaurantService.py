@@ -11,7 +11,7 @@ class RestaurantService:
     def __init__(self):
       self.client = MongoClient(settings.MONGODB_URI, tlsCAFile=certifi.where())
       self.db = self.client[settings.DB_NAME]
-      self.collection = self.db["payments"]
+      self.collection = self.db[settings.COLLECTION_NAME]
 
     def createRestaurant(self, restaurantMutation : RestaurantMutation, userId : str):
       try:
