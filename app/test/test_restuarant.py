@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from app.helpers.exception import RestaurantException
 from app.main import app 
@@ -23,7 +22,8 @@ def test_addRestaurant_ReturnSuccess():
             "closeTime": "2024-10-08T22:00:00"
         },
         "capacity": 50,
-        "description": "A cozy place for delicious food."
+        "description": "A cozy place for delicious food.",
+        "cost" : 1
     }
     response = client.post(f"/api/restaurant/{userId}/create", json=restaurantData)
 
@@ -45,7 +45,8 @@ def test_addRestaurantInvalidName_ReturnError():
             "closeTime": "2024-10-08T22:00:00"
         },
         "capacity": 50,
-        "description": "A cozy place for delicious food."
+        "description": "A cozy place for delicious food.",
+        "cost" : 1
     }
     response = client.post(f"/api/restaurant/{userId}/create", json=restaurantData)
 
@@ -71,6 +72,7 @@ def test_retrieveRestaurant_ReturnSuccess():
                 },
                 "capacity": 50,
                 "description": "A cozy place for delicious food.",
+                "cost" : 1,
                 "createdBy": "userId123",
                 "createdWhen": "08102024",
                 "updatedWhen": "08102024"
@@ -115,6 +117,7 @@ def test_retrieveRestaurantById_ReturnSuccess():
             },
             "capacity": 50,
             "description": "A cozy place for delicious food.",
+            "cost" : 1,
             "createdBy": "userId123",
             "createdWhen": "08102024",
             "updatedWhen": "08102024"
@@ -166,13 +169,14 @@ def test_updateRestaurant_ReturnSuccess():
                 "closeTime": "2024-10-08T22:00:00"
             },
             "capacity": 50,
-            "description": "An updated description."
+            "description": "An updated description.",
+            "cost" : 1
         }
 
         response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
 
     assert response.status_code == 200
-    assert response.json() == {"restaurantId": "1234567890abcdef"}
+    assert response.json() == {"message" : "Restaurant updated successfully","restaurantId": "1234567890abcdef"}
 
 def test_updateRestaurant_ReturnFailure_RestaurantInactive():
     mock_exception = RestaurantException(400, "Cannot update restaurant because it is inactive.")
@@ -191,7 +195,8 @@ def test_updateRestaurant_ReturnFailure_RestaurantInactive():
                 "closeTime": "2024-10-08T22:00:00"
             },
             "capacity": 50,
-            "description": "An inactive restaurant."
+            "description": "An inactive restaurant.",
+            "cost" : 1
         }
 
         response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
@@ -216,10 +221,35 @@ def test_updateRestaurant_ReturnFailure_InvalidData():
                 "closeTime": "2024-10-08T22:00:00"
             },
             "capacity": 50,
-            "description": "A bad restaurant."
+            "description": "A bad restaurant.",
+            "cost" : 1
         }
 
         response = client.put("/api/restaurant/userId123/update/1234567890abcdef", json=restaurant_data)
 
     assert response.status_code == 400
     assert response.json() == {"detail": "Restaurant name must be at least 6 characters long."}
+
+def test_deleteRestaurant_ReturnSuccess():
+    mockResponse = {
+        "statusCode": 200,
+        "restaurantId": "1234567890abcdef"
+    }
+
+    with patch('app.services.restaurantService.RestaurantService.deleteRestaurant', return_value=mockResponse):
+        response = client.delete("/api/restaurant/userId123/delete/1234567890abcdef")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "Restaurant deleted successfully",
+        "restaurantId": mockResponse["restaurantId"]
+    }
+
+def test_deleteRestaurant_ReturnFailure():
+    mockException = RestaurantException(404, "Restaurant not found.")
+
+    with patch('app.services.restaurantService.RestaurantService.deleteRestaurant', side_effect=mockException):
+        response = client.delete("/api/restaurant/userId123/delete/1234567890abcdef")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Restaurant not found."}

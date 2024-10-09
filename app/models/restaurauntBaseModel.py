@@ -36,3 +36,4 @@ class RestaurantMutation(BaseModel):
   operatingHour : OperatingHour
   capacity : int
   description : Optional[str]
+  cost : int

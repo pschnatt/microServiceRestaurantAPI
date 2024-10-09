@@ -11,7 +11,7 @@ class RestaurantService:
     def __init__(self):
       self.client = MongoClient(settings.MONGODB_URI, tlsCAFile=certifi.where())
       self.db = self.client[settings.DB_NAME]
-      self.collection = self.db["payments"]
+      self.collection = self.db[settings.COLLECTION_NAME]
 
     def createRestaurant(self, restaurantMutation : RestaurantMutation, userId : str):
       try:
@@ -55,6 +55,7 @@ class RestaurantService:
             "operatingHour": restaurant["operatingHour"],
             "capacity": restaurant["capacity"],
             "description": restaurant["description"],
+            "cost" : restaurant["cost"],
             "createdBy": restaurant["createdBy"],
             "createdWhen": restaurant["createdWhen"],
             "updatedBy": restaurant["updatedBy"],
@@ -82,6 +83,7 @@ class RestaurantService:
                 "operatingHour": restaurant["operatingHour"],
                 "capacity": restaurant["capacity"],
                 "description": restaurant["description"],
+                "cost" : restaurant["cost"],
                 "createdBy": restaurant["createdBy"],
                 "createdWhen": restaurant["createdWhen"],
                 "updatedBy": restaurant["updatedBy"],
@@ -125,6 +127,7 @@ class RestaurantService:
                     "operatingHour": restaurantData["operatingHour"],
                     "capacity": restaurantData["capacity"],
                     "description": restaurantData["description"],
+                    "cost" : restaurantData["cost"],
                     "updated_by" : userId,
                     "updated_When": datetime.now().strftime("%d%m%Y") 
                 }
@@ -139,6 +142,33 @@ class RestaurantService:
         except Exception as e:
             raise RestaurantException(500, f"Error updating restaurant: {str(e)}")
     
-    def deleteRestaurant(self, restaurantId : str):
-        pass
+    def deleteRestaurant(self, restaurantId: str, userId: str):
+      try:
+          existing_restaurant = self.collection.find_one({"_id": ObjectId(restaurantId)})
+          if not existing_restaurant:
+              raise RestaurantException(404, "Restaurant not found.")
+          if existing_restaurant["status"] == 0:
+              raise RestaurantException(400, "Restaurant is already inactive.")
+          updateData = {
+              "$set": {
+                  "status": 0,
+                  "updated_by": userId,
+                  "updated_when": datetime.now().strftime("%d%m%Y")
+              }
+          }
+          result = self.collection.update_one({"_id": ObjectId(restaurantId)}, updateData)
+
+          if result.modified_count == 0:
+              raise RestaurantException(500, "Error updating restaurant status.")
+          return {"statusCode": 200, "restaurantId": restaurantId}
+
+      except RestaurantException as e:
+          raise e
+      except Exception as e:
+          raise RestaurantException(500, f"Error updating restaurant status: {str(e)}")
+
+
+    def checkAvailability():
+       pass
+
     
