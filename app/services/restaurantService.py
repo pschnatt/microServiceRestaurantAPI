@@ -167,4 +167,8 @@ class RestaurantService:
       except Exception as e:
           raise RestaurantException(500, f"Error updating restaurant status: {str(e)}")
 
+
+    def checkAvailability():
+       pass
+
     
