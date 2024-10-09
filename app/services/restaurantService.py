@@ -52,14 +52,14 @@ class RestaurantService:
             "location": restaurant["location"],
             "type": restaurant["type"],
             "contactInfo": restaurant["contactInfo"],
-            "operatingHour": restaurant["operatingHour"],
+            "operatingHour": str(restaurant["operatingHour"]),
             "capacity": restaurant["capacity"],
             "description": restaurant["description"],
             "cost" : restaurant["cost"],
-            "createdBy": restaurant["createdBy"],
-            "createdWhen": restaurant["createdWhen"],
-            "updatedBy": restaurant["updatedBy"],
-            "updatedWhen": restaurant["updatedWhen"]
+            "createdBy": restaurant["created_by"],
+            "createdWhen": restaurant["created_when"],
+            "updatedBy": restaurant["updated_by"],
+            "updatedWhen": restaurant["updated_when"]
         } for restaurant in restaurants]
 
         return {"statusCode": 200, "restaurants": restaurantList}  
@@ -80,14 +80,14 @@ class RestaurantService:
                 "location": restaurant["location"],
                 "type": restaurant["type"],
                 "contactInfo": restaurant["contactInfo"],
-                "operatingHour": restaurant["operatingHour"],
+                "operatingHour": str(restaurant["operatingHour"]),
                 "capacity": restaurant["capacity"],
                 "description": restaurant["description"],
                 "cost" : restaurant["cost"],
-                "createdBy": restaurant["createdBy"],
-                "createdWhen": restaurant["createdWhen"],
-                "updatedBy": restaurant["updatedBy"],
-                "updatedWhen": restaurant["updatedWhen"]
+                "createdBy": restaurant["created_by"],
+                "createdWhen": restaurant["created_when"],
+                "updatedBy": restaurant["updated_by"],
+                "updatedWhen": restaurant["updated_when"]
             }
             return {"statusCode": 200, "restaurant": restaurantData}
         
@@ -106,7 +106,7 @@ class RestaurantService:
             if not Validator.validatePhoneNumber(restaurantData["contactInfo"]["phoneNumber"]):
                 raise RestaurantException(400, "Invalid phone number format.")
             
-            if restaurantData["contactInfo"]["email"] and not Validator.validate_email(restaurantData["contactInfo"]["email"]):
+            if restaurantData["contactInfo"]["email"] and not Validator.validateEmail(restaurantData["contactInfo"]["email"]):
                 raise RestaurantException(400, "Invalid email format.")
 
             if restaurantData["operatingHour"]["openTime"] >= restaurantData["operatingHour"]["closeTime"]:
