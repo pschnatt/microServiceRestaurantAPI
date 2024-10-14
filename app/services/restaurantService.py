@@ -44,7 +44,7 @@ class RestaurantService:
           raise RestaurantException(500, f"Error creating restaurant: {str(e)}")
       
     def getRestaurantList(self):
-      try:
+      try:   
         restaurants = list(self.collection.find({"status": 1}))
         restaurantList = [{
             "restaurantId": str(restaurant["_id"]),
